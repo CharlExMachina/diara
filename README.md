@@ -4,6 +4,8 @@
 
 Interactive CLI tool to bulk delete GitHub repositories. Search, filter, select multiple repos, and banish them with a single confirmation.
 
+**Built with [Bun](https://bun.sh)** - Fast, lightweight standalone executable. No runtime dependencies.
+
 ```
         *  .  *       .   *   .    *    .
     .    *    ╭──────────────────╮   .   *
@@ -24,25 +26,37 @@ Interactive CLI tool to bulk delete GitHub repositories. Search, filter, select 
 
 ## Installation
 
-### Via pnpm (recommended)
+### Via Homebrew (recommended)
 
 ```bash
-pnpm add -g diara
+brew tap CharlExMachina/diara
+brew install diara
 ```
 
-### Via npx (no install)
+### Download Binary
+
+Download the latest release for your platform from [GitHub Releases](https://github.com/CharlExMachina/diara/releases):
+
+- `diara-macos-arm64` - macOS Apple Silicon
+- `diara-macos-x64` - macOS Intel
+- `diara-linux-x64` - Linux x64
+- `diara-linux-arm64` - Linux ARM64
 
 ```bash
-npx diara
+# Example for macOS ARM64
+curl -L https://github.com/CharlExMachina/diara/releases/latest/download/diara-macos-arm64.tar.gz | tar xz
+chmod +x diara-macos-arm64
+mv diara-macos-arm64 /usr/local/bin/diara
 ```
 
-### From source
+### From source (requires Bun)
 
 ```bash
-git clone https://github.com/yourusername/diara.git
+git clone https://github.com/CharlExMachina/diara.git
 cd diara
-pnpm install
-pnpm link --global
+bun install
+bun run build
+./dist/diara
 ```
 
 ## Setup
@@ -135,17 +149,20 @@ Found 5 repos matching "test"
 - **Not updated in 1+ year** - Stale repos
 - **Not updated in 2+ years** - Very old repos
 
-## Homebrew Installation (Alternative)
+## Building
 
-If you prefer Homebrew, you can create your own tap:
+Build standalone executables for all platforms:
 
-1. Create a repo named `homebrew-diara`
-2. Add the formula from `homebrew/diara.rb`
-3. Install:
-   ```bash
-   brew tap yourusername/diara
-   brew install diara
-   ```
+```bash
+bun install
+bun run build:all
+```
+
+This creates binaries in `dist/`:
+- `diara-macos-arm64`
+- `diara-macos-x64`
+- `diara-linux-x64`
+- `diara-linux-arm64`
 
 ## Troubleshooting
 
@@ -162,10 +179,6 @@ Make sure your token has the `delete_repo` scope. You may need to generate a new
 Delete the config file:
 - macOS: `rm -rf ~/Library/Preferences/diara-nodejs/`
 - Linux: `rm -rf ~/.config/diara-nodejs/`
-
-## Requirements
-
-- Node.js 18.0.0 or higher
 
 ## License
 
