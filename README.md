@@ -63,12 +63,15 @@ bun run build
 
 ### 1. Create a GitHub Personal Access Token
 
-1. Go to [GitHub Settings > Developer settings > Personal access tokens](https://github.com/settings/tokens)
-2. Click **"Generate new token"** (classic)
-3. Give it a name (e.g., "diara")
-4. Select the **`delete_repo`** scope
-5. Click **"Generate token"**
-6. Copy the token (you won't see it again!)
+1. Go to **[Fine-grained tokens](https://github.com/settings/personal-access-tokens/new)**
+2. **Token name:** `diara` (or anything you like)
+3. **Expiration:** Choose your preference
+4. **Repository access:** Select **"All repositories"**
+5. **Permissions** → **Repository permissions:**
+   - **Administration:** Set to **"Read and write"**
+6. Click **"Generate token"** and copy it
+
+> **Note:** The Administration permission is required to delete repositories.
 
 ### 2. Run diara
 
@@ -172,7 +175,7 @@ Your token may be invalid or expired. The tool will clear it automatically. Run 
 
 ### "Failed to delete repository"
 
-Make sure your token has the `delete_repo` scope. You may need to generate a new token with the correct permissions.
+Make sure your token has the **Administration: Read and write** permission. You may need to generate a new token with the correct permissions.
 
 ### Clear saved token
 

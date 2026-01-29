@@ -5,12 +5,18 @@ import type { Repository, FilterType } from './github.js';
 type FindMethod = 'search' | 'filter' | 'all';
 
 export const promptForToken = async () => {
-  console.log(chalk.yellow('\n🔑 No GitHub token found. Let\'s set one up!'));
-  console.log(chalk.gray('   Create a token at: https://github.com/settings/tokens'));
-  console.log(chalk.gray('   Required scope: delete_repo\n'));
+  console.log(chalk.yellow('\n🔑 No GitHub token found. Let\'s set one up!\n'));
+
+  console.log(chalk.white('   1. Go to: ') + chalk.cyan('https://github.com/settings/personal-access-tokens/new'));
+  console.log(chalk.white('   2. Token name: ') + chalk.gray('diara (or anything you like)'));
+  console.log(chalk.white('   3. Expiration: ') + chalk.gray('Choose your preference'));
+  console.log(chalk.white('   4. Repository access: ') + chalk.yellow('"All repositories"'));
+  console.log(chalk.white('   5. Permissions → Repository permissions:'));
+  console.log(chalk.gray('      • ') + chalk.white('Administration: ') + chalk.yellow('"Read and write"'));
+  console.log(chalk.white('   6. Click ') + chalk.green('"Generate token"') + chalk.white(' and copy it\n'));
 
   return password({
-    message: 'Enter your GitHub Personal Access Token:',
+    message: 'Paste your token here:',
     mask: '*'
   });
 };
