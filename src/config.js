@@ -2,6 +2,7 @@ import Conf from 'conf';
 
 const config = new Conf({
   projectName: 'diara',
+  projectSuffix: '',
   schema: {
     githubToken: {
       type: 'string',

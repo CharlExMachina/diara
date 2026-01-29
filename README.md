@@ -79,8 +79,8 @@ diara
 On first run, you'll be prompted to enter your token. It will be saved securely for future use.
 
 **Token storage locations:**
-- macOS: `~/Library/Preferences/diara-nodejs/`
-- Linux: `~/.config/diara-nodejs/`
+- macOS: `~/Library/Preferences/diara/`
+- Linux: `~/.config/diara/`
 
 ## Usage
 
@@ -177,8 +177,8 @@ Make sure your token has the `delete_repo` scope. You may need to generate a new
 ### Clear saved token
 
 Delete the config file:
-- macOS: `rm -rf ~/Library/Preferences/diara-nodejs/`
-- Linux: `rm -rf ~/.config/diara-nodejs/`
+- macOS: `rm -rf ~/Library/Preferences/diara/`
+- Linux: `rm -rf ~/.config/diara/`
 
 ## License
 
