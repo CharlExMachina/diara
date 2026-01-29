@@ -1,37 +1,38 @@
 import { input, password, select, checkbox, confirm } from '@inquirer/prompts';
 import chalk from 'chalk';
+import type { Repository, FilterType } from './github.js';
 
-export async function promptForToken() {
+type FindMethod = 'search' | 'filter' | 'all';
+
+export const promptForToken = async () => {
   console.log(chalk.yellow('\n🔑 No GitHub token found. Let\'s set one up!'));
   console.log(chalk.gray('   Create a token at: https://github.com/settings/tokens'));
   console.log(chalk.gray('   Required scope: delete_repo\n'));
 
-  const token = await password({
+  return password({
     message: 'Enter your GitHub Personal Access Token:',
     mask: '*'
   });
+};
 
-  return token;
-}
-
-export async function promptFindMethod() {
-  return await select({
+export const promptFindMethod = async (): Promise<FindMethod> => {
+  return select({
     message: 'How would you like to find repositories?',
     choices: [
-      { name: 'Search by name', value: 'search' },
-      { name: 'Filter by criteria', value: 'filter' },
-      { name: 'Show all', value: 'all' }
+      { name: 'Search by name', value: 'search' as const },
+      { name: 'Filter by criteria', value: 'filter' as const },
+      { name: 'Show all', value: 'all' as const }
     ]
   });
-}
+};
 
-export async function promptSearch() {
-  return await input({
+export const promptSearch = async () => {
+  return input({
     message: 'Search repos (partial match):'
   });
-}
+};
 
-export async function promptFilter(repos) {
+export const promptFilter = async (repos: Repository[]): Promise<FilterType> => {
   const now = new Date();
   const oneYearAgo = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
   const twoYearsAgo = new Date(now.getFullYear() - 2, now.getMonth(), now.getDate());
@@ -42,22 +43,22 @@ export async function promptFilter(repos) {
   const olderThan1Year = repos.filter(r => r.updatedAt < oneYearAgo).length;
   const olderThan2Years = repos.filter(r => r.updatedAt < twoYearsAgo).length;
 
-  return await select({
+  return select({
     message: 'Filter repositories by:',
     choices: [
-      { name: `Show all repositories (${repos.length})`, value: 'all' },
-      { name: `Only repos with 0 stars (${zeroStarsCount})`, value: 'zero-stars' },
-      { name: `Only forked repos (${forksCount})`, value: 'forks' },
-      { name: `Only non-forked repos (${nonForksCount})`, value: 'non-forks' },
-      { name: `Not updated in 1+ year (${olderThan1Year})`, value: 'older-1-year' },
-      { name: `Not updated in 2+ years (${olderThan2Years})`, value: 'older-2-years' }
+      { name: `Show all repositories (${repos.length})`, value: 'all' as const },
+      { name: `Only repos with 0 stars (${zeroStarsCount})`, value: 'zero-stars' as const },
+      { name: `Only forked repos (${forksCount})`, value: 'forks' as const },
+      { name: `Only non-forked repos (${nonForksCount})`, value: 'non-forks' as const },
+      { name: `Not updated in 1+ year (${olderThan1Year})`, value: 'older-1-year' as const },
+      { name: `Not updated in 2+ years (${olderThan2Years})`, value: 'older-2-years' as const }
     ]
   });
-}
+};
 
-function formatTimeAgo(date) {
+const formatTimeAgo = (date: Date) => {
   const now = new Date();
-  const diffMs = now - date;
+  const diffMs = now.getTime() - date.getTime();
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
   if (diffDays < 30) {
@@ -69,9 +70,9 @@ function formatTimeAgo(date) {
     const years = Math.floor(diffDays / 365);
     return `${years} year${years > 1 ? 's' : ''} ago`;
   }
-}
+};
 
-export async function promptSelectRepos(repos) {
+export const promptSelectRepos = async (repos: Repository[]): Promise<Repository[]> => {
   if (repos.length === 0) {
     return [];
   }
@@ -81,14 +82,14 @@ export async function promptSelectRepos(repos) {
     value: repo
   }));
 
-  return await checkbox({
+  return checkbox({
     message: 'Select repositories to delete (space to select, enter to confirm):',
-    choices: choices,
+    choices,
     pageSize: 15
   });
-}
+};
 
-export async function promptConfirmDeletion(repos) {
+export const promptConfirmDeletion = async (repos: Repository[]) => {
   console.log(chalk.red('\n⚠️  You are about to DELETE these repositories:'));
   repos.forEach(repo => {
     console.log(chalk.red(`   • ${repo.fullName}`));
@@ -100,11 +101,11 @@ export async function promptConfirmDeletion(repos) {
   });
 
   return confirmation === 'DELETE';
-}
+};
 
-export async function promptContinue() {
-  return await confirm({
+export const promptContinue = async () => {
+  return confirm({
     message: 'Would you like to delete more repositories?',
     default: false
   });
-}
+};
