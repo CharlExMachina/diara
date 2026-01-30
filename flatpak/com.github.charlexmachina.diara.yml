@@ -14,22 +14,20 @@ modules:
   - name: diara
     buildsystem: simple
     build-commands:
-      # Install the pre-built binary
+      # Extract and install the binary
+      - tar -xzf diara-linux-*.tar.gz
       - install -Dm755 diara /app/bin/diara
       # Install metainfo for software centers
       - install -Dm644 com.github.charlexmachina.diara.metainfo.xml /app/share/metainfo/com.github.charlexmachina.diara.metainfo.xml
     sources:
       - type: file
-        # This URL will be updated by CI when releasing
-        url: https://github.com/CharlExMachina/diara/releases/download/v1.0.0/diara-linux-x64
-        sha256: REPLACE_WITH_ACTUAL_SHA256
-        dest-filename: diara
+        url: https://github.com/CharlExMachina/diara/releases/download/v1.2.0/diara-linux-x64.tar.gz
+        sha256: 607fe4df8184f2e98d280a570c8ef6758ea5121a3f07a5d901cdcaacfe8926ae
         only-arches:
           - x86_64
       - type: file
-        url: https://github.com/CharlExMachina/diara/releases/download/v1.0.0/diara-linux-arm64
-        sha256: REPLACE_WITH_ACTUAL_SHA256_ARM64
-        dest-filename: diara
+        url: https://github.com/CharlExMachina/diara/releases/download/v1.2.0/diara-linux-arm64.tar.gz
+        sha256: d346c4e8aeffd38e6aaf65fd35597635b3c535c579fde72fd198ffaf54e76456
         only-arches:
           - aarch64
       - type: file
