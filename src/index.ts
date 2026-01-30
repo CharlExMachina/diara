@@ -19,8 +19,10 @@ import {
   promptConfirmDeletion,
   promptContinue,
   showTokenExpirationWarning,
+  handleSettings,
   BACK
 } from './prompts.js';
+import { t } from './i18n.js';
 
 const showTitle = () => {
   console.log(chalk.yellow(`
@@ -30,7 +32,7 @@ const showTitle = () => {
         .     ╰──────────────────╯  *
     ˚ · .     ·  ˚   ˚  ·  . ˚   · ˚  ·
   `));
-  console.log(chalk.gray('      Banish your abandoned repositories\n'));
+  console.log(chalk.gray(`      ${t('title.subtitle')}\n`));
 };
 
 type TokenPromptReason = 'first-time' | 'expired' | 'invalid';
@@ -60,7 +62,7 @@ const main = async () => {
     let token = await setupToken();
     initOctokit(token);
 
-    const authSpinner = ora('Authenticating with GitHub...').start();
+    const authSpinner = ora(t('auth.authenticating')).start();
     let authenticated = false;
 
     while (!authenticated) {
@@ -69,35 +71,35 @@ const main = async () => {
         const expirationStatus = getTokenExpirationStatus(expiresAt);
 
         if (expirationStatus === 'expired') {
-          authSpinner.fail(chalk.red('Token expired'));
+          authSpinner.fail(chalk.red(t('auth.tokenExpired')));
           clearToken();
           token = await setupToken('expired');
           initOctokit(token);
           continue;
         }
 
-        authSpinner.succeed(chalk.green(`Authenticated as @${username}`));
+        authSpinner.succeed(chalk.green(t('auth.authenticated', { username })));
 
         // Show warning if token is expiring soon
         if (expirationStatus === 'expiring-soon' && expiresAt) {
           showTokenExpirationWarning(expiresAt);
         } else if (expirationStatus === 'no-expiration') {
-          console.log(chalk.gray('   💡 Tip: Consider setting an expiration on your token for better security.\n'));
+          console.log(chalk.gray(`   💡 ${t('auth.tokenTip')}\n`));
         }
 
         authenticated = true;
       } catch (error) {
-        authSpinner.fail(chalk.red('Authentication failed'));
+        authSpinner.fail(chalk.red(t('auth.failed')));
         if (error instanceof Error) {
           if (isOctokitError(error) && error.status === 401) {
             // Token is invalid (could be expired, revoked, or malformed)
             clearToken();
             token = await setupToken('invalid');
             initOctokit(token);
-            authSpinner.start('Authenticating with GitHub...');
+            authSpinner.start(t('auth.authenticating'));
             continue;
           } else {
-            console.log(chalk.red(`\nError: ${error.message}`));
+            console.log(chalk.red(`\n${t('error.unexpected', { message: error.message })}`));
             process.exit(1);
           }
         }
@@ -107,21 +109,21 @@ const main = async () => {
 
     let continueLoop = true;
     while (continueLoop) {
-      const fetchSpinner = ora('Fetching repositories...').start();
+      const fetchSpinner = ora(t('repos.fetching')).start();
       let allRepos;
       try {
         allRepos = await fetchAllRepos();
-        fetchSpinner.succeed(chalk.green(`Found ${allRepos.length} repositories`));
+        fetchSpinner.succeed(chalk.green(t('repos.found', { count: allRepos.length })));
       } catch (error) {
-        fetchSpinner.fail(chalk.red('Failed to fetch repositories'));
+        fetchSpinner.fail(chalk.red(t('repos.fetchFailed')));
         if (error instanceof Error) {
-          console.log(chalk.red(`\nError: ${error.message}`));
+          console.log(chalk.red(`\n${t('error.unexpected', { message: error.message })}`));
         }
         process.exit(1);
       }
 
       if (allRepos.length === 0) {
-        console.log(chalk.yellow('\nNo repositories found.'));
+        console.log(chalk.yellow(`\n${t('repos.none')}`));
         process.exit(0);
       }
 
@@ -131,13 +133,16 @@ const main = async () => {
       findMethodLoop: while (filteredRepos === null) {
         const findMethod = await promptFindMethod();
 
-        if (findMethod === 'search') {
+        if (findMethod === 'settings') {
+          await handleSettings();
+          continue findMethodLoop;
+        } else if (findMethod === 'search') {
           const query = await promptSearch();
           if (query === BACK) {
             continue findMethodLoop;
           }
           filteredRepos = searchRepos(allRepos, query);
-          console.log(chalk.cyan(`\nFound ${filteredRepos.length} repos matching "${query}"`));
+          console.log(chalk.cyan(`\n${t('search.found', { count: filteredRepos.length, query })}`));
         } else if (findMethod === 'filter') {
           const filterType = await promptFilter(allRepos);
           if (filterType === BACK) {
@@ -149,7 +154,7 @@ const main = async () => {
         }
 
         if (filteredRepos.length === 0) {
-          console.log(chalk.yellow('\nNo repositories match your criteria.'));
+          console.log(chalk.yellow(`\n${t('repos.noMatch')}`));
           filteredRepos = null; // Reset to show find method again
           continue findMethodLoop;
         }
@@ -165,7 +170,7 @@ const main = async () => {
       const selectedRepos = selection.repos;
 
       if (selectedRepos.length === 0) {
-        console.log(chalk.yellow('\nNo repositories selected.'));
+        console.log(chalk.yellow(`\n${t('repos.noneSelected')}`));
         continueLoop = await promptContinue();
         continue;
       }
@@ -173,49 +178,51 @@ const main = async () => {
       const confirmed = await promptConfirmDeletion(selectedRepos);
 
       if (!confirmed) {
-        console.log(chalk.yellow('\nDeletion cancelled.'));
+        console.log(chalk.yellow(`\n${t('delete.cancelled')}`));
         continueLoop = await promptContinue();
         continue;
       }
 
-      console.log(chalk.cyan('\n🗑️  Deleting repositories...\n'));
+      console.log(chalk.cyan(`\n🗑️  ${t('delete.deleting')}\n`));
 
       let successCount = 0;
       let failCount = 0;
 
       for (const repo of selectedRepos) {
-        const deleteSpinner = ora(`Deleting ${repo.fullName}...`).start();
+        const deleteSpinner = ora(t('delete.deletingRepo', { repo: repo.fullName })).start();
         try {
           await deleteRepo(repo.owner, repo.name);
-          deleteSpinner.succeed(chalk.green(`Deleted ${repo.fullName}`));
+          deleteSpinner.succeed(chalk.green(t('delete.deleted', { repo: repo.fullName })));
           successCount++;
         } catch (error) {
           const message = error instanceof Error ? error.message : 'Unknown error';
-          deleteSpinner.fail(chalk.red(`Failed to delete ${repo.fullName}: ${message}`));
+          deleteSpinner.fail(chalk.red(t('delete.deleteFailed', { repo: repo.fullName, error: message })));
           failCount++;
         }
       }
 
       console.log('');
       if (successCount > 0) {
-        console.log(chalk.green(`✅ Successfully deleted ${successCount} repositor${successCount === 1 ? 'y' : 'ies'}`));
+        const successMsg = successCount === 1 ? t('delete.successCount', { count: successCount }) : t('delete.successCountPlural', { count: successCount });
+        console.log(chalk.green(`✅ ${successMsg}`));
       }
       if (failCount > 0) {
-        console.log(chalk.red(`❌ Failed to delete ${failCount} repositor${failCount === 1 ? 'y' : 'ies'}`));
+        const failMsg = failCount === 1 ? t('delete.failCount', { count: failCount }) : t('delete.failCountPlural', { count: failCount });
+        console.log(chalk.red(`❌ ${failMsg}`));
       }
 
       continueLoop = await promptContinue();
     }
 
-    console.log(chalk.cyan('\nGoodbye! 👋\n'));
+    console.log(chalk.cyan(`\n${t('goodbye')} 👋\n`));
 
   } catch (error) {
     if (error instanceof Error && error.name === 'ExitPromptError') {
-      console.log(chalk.yellow('\n\nOperation cancelled.\n'));
+      console.log(chalk.yellow(`\n\n${t('error.cancelled')}\n`));
       process.exit(0);
     }
     const message = error instanceof Error ? error.message : 'Unknown error';
-    console.error(chalk.red(`\nUnexpected error: ${message}`));
+    console.error(chalk.red(`\n${t('error.unexpected', { message })}`));
     process.exit(1);
   }
 };

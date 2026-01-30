@@ -1,37 +1,45 @@
 import { input, password, select, checkbox, confirm } from '@inquirer/prompts';
 import chalk from 'chalk';
 import type { Repository, FilterType } from './github.js';
+import {
+  t,
+  setLanguage,
+  getLanguageSetting,
+  getLanguageDisplayName,
+  SUPPORTED_LANGUAGES,
+  type SupportedLanguage
+} from './i18n.js';
 
-type FindMethod = 'search' | 'filter' | 'all';
+type FindMethod = 'search' | 'filter' | 'all' | 'settings';
 
 // Symbol to indicate user wants to go back
 export const BACK = Symbol('back');
 
 export const promptForToken = async (reason?: 'first-time' | 'expired' | 'invalid') => {
   if (reason === 'expired') {
-    console.log(chalk.red('\n⚠️  Your GitHub token has expired!\n'));
-    console.log(chalk.gray('   For security, tokens should have expiration dates.'));
-    console.log(chalk.gray('   Let\'s generate a new one:\n'));
+    console.log(chalk.red(`\n⚠️  ${t('token.setup.expired')}\n`));
+    console.log(chalk.gray(`   ${t('token.setup.expiredHint')}`));
+    console.log(chalk.gray(`   ${t('token.setup.expiredAction')}\n`));
   } else if (reason === 'invalid') {
-    console.log(chalk.red('\n⚠️  Your GitHub token is invalid.\n'));
-    console.log(chalk.gray('   It may have been revoked or the permissions changed.'));
-    console.log(chalk.gray('   Let\'s generate a new one:\n'));
+    console.log(chalk.red(`\n⚠️  ${t('token.setup.invalid')}\n`));
+    console.log(chalk.gray(`   ${t('token.setup.invalidHint')}`));
+    console.log(chalk.gray(`   ${t('token.setup.expiredAction')}\n`));
   } else {
-    console.log(chalk.yellow('\n🔑 No GitHub token found. Let\'s set one up!\n'));
+    console.log(chalk.yellow(`\n🔑 ${t('token.setup.firstTime')}\n`));
   }
 
-  console.log(chalk.white('   1. Go to: ') + chalk.cyan('https://github.com/settings/personal-access-tokens/new'));
-  console.log(chalk.white('   2. Token name: ') + chalk.gray('diara (or anything you like)'));
-  console.log(chalk.white('   3. Expiration: ') + chalk.yellow('30 or 90 days') + chalk.gray(' (recommended for security)'));
-  console.log(chalk.white('   4. Repository access: ') + chalk.yellow('"All repositories"'));
-  console.log(chalk.white('   5. Permissions → Repository permissions:'));
-  console.log(chalk.gray('      • ') + chalk.white('Administration: ') + chalk.yellow('"Read and write"'));
-  console.log(chalk.white('   6. Click ') + chalk.green('"Generate token"') + chalk.white(' and copy it\n'));
+  console.log(chalk.white(`   ${t('token.instructions.step1')} `) + chalk.cyan('https://github.com/settings/personal-access-tokens/new'));
+  console.log(chalk.white(`   ${t('token.instructions.step2')} `) + chalk.gray(t('token.instructions.step2Hint')));
+  console.log(chalk.white(`   ${t('token.instructions.step3')} `) + chalk.yellow('30 or 90 days') + chalk.gray(` ${t('token.instructions.step3Hint')}`));
+  console.log(chalk.white(`   ${t('token.instructions.step4')} `) + chalk.yellow(t('token.instructions.step4Value')));
+  console.log(chalk.white(`   ${t('token.instructions.step5')}`));
+  console.log(chalk.gray('      • ') + chalk.white(`${t('token.instructions.step5Permission')} `) + chalk.yellow(t('token.instructions.step5Value')));
+  console.log(chalk.white(`   ${t('token.instructions.step6')} `) + chalk.green(t('token.instructions.step6Button')) + chalk.white(` ${t('token.instructions.step6End')}\n`));
 
-  console.log(chalk.gray('   💡 Tip: Set an expiration date! Diara will remind you before it expires.\n'));
+  console.log(chalk.gray(`   💡 ${t('token.instructions.tip')}\n`));
 
   return password({
-    message: 'Paste your token here:',
+    message: t('token.prompt'),
     mask: '*'
   });
 };
@@ -41,29 +49,30 @@ export const showTokenExpirationWarning = (expiresAt: Date) => {
   const daysUntilExpiry = Math.ceil((expiresAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
 
   if (daysUntilExpiry <= 0) {
-    console.log(chalk.red(`\n⚠️  Your token has expired!`));
+    console.log(chalk.red(`\n⚠️  ${t('token.expiration.expired')}`));
   } else if (daysUntilExpiry === 1) {
-    console.log(chalk.yellow(`\n⚠️  Your token expires tomorrow!`));
+    console.log(chalk.yellow(`\n⚠️  ${t('token.expiration.tomorrow')}`));
   } else {
-    console.log(chalk.yellow(`\n⚠️  Your token expires in ${daysUntilExpiry} days (${expiresAt.toLocaleDateString()})`));
+    console.log(chalk.yellow(`\n⚠️  ${t('token.expiration.days', { days: daysUntilExpiry, date: expiresAt.toLocaleDateString() })}`));
   }
-  console.log(chalk.gray('   Generate a new token at: https://github.com/settings/personal-access-tokens/new\n'));
+  console.log(chalk.gray(`   ${t('token.expiration.renewHint')} https://github.com/settings/personal-access-tokens/new\n`));
 };
 
 export const promptFindMethod = async (): Promise<FindMethod> => {
   return select({
-    message: 'How would you like to find repositories?',
+    message: t('menu.findMethod'),
     choices: [
-      { name: 'Search by name', value: 'search' as const },
-      { name: 'Filter by criteria', value: 'filter' as const },
-      { name: 'Show all', value: 'all' as const }
+      { name: t('menu.searchByName'), value: 'search' as const },
+      { name: t('menu.filterByCriteria'), value: 'filter' as const },
+      { name: t('menu.showAll'), value: 'all' as const },
+      { name: chalk.gray(`⚙️  ${t('menu.settings')}`), value: 'settings' as const }
     ]
   });
 };
 
 export const promptSearch = async (): Promise<string | typeof BACK> => {
   const result = await input({
-    message: 'Search repos (partial match, or leave empty to go back):'
+    message: t('search.prompt')
   });
 
   if (result.trim() === '') {
@@ -86,15 +95,15 @@ export const promptFilter = async (repos: Repository[]): Promise<FilterType | ty
   type FilterChoice = FilterType | 'back';
 
   const result = await select<FilterChoice>({
-    message: 'Filter repositories by:',
+    message: t('filter.prompt'),
     choices: [
-      { name: chalk.gray('← Back'), value: 'back' as const },
-      { name: `Show all repositories (${repos.length})`, value: 'all' as const },
-      { name: `Only repos with 0 stars (${zeroStarsCount})`, value: 'zero-stars' as const },
-      { name: `Only forked repos (${forksCount})`, value: 'forks' as const },
-      { name: `Only non-forked repos (${nonForksCount})`, value: 'non-forks' as const },
-      { name: `Not updated in 1+ year (${olderThan1Year})`, value: 'older-1-year' as const },
-      { name: `Not updated in 2+ years (${olderThan2Years})`, value: 'older-2-years' as const }
+      { name: chalk.gray(t('menu.back')), value: 'back' as const },
+      { name: t('filter.all', { count: repos.length }), value: 'all' as const },
+      { name: t('filter.zeroStars', { count: zeroStarsCount }), value: 'zero-stars' as const },
+      { name: t('filter.forks', { count: forksCount }), value: 'forks' as const },
+      { name: t('filter.nonForks', { count: nonForksCount }), value: 'non-forks' as const },
+      { name: t('filter.older1Year', { count: olderThan1Year }), value: 'older-1-year' as const },
+      { name: t('filter.older2Years', { count: olderThan2Years }), value: 'older-2-years' as const }
     ]
   });
 
@@ -110,13 +119,13 @@ const formatTimeAgo = (date: Date) => {
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
   if (diffDays < 30) {
-    return `${diffDays} days ago`;
+    return t('time.daysAgo', { count: diffDays });
   } else if (diffDays < 365) {
     const months = Math.floor(diffDays / 30);
-    return `${months} month${months > 1 ? 's' : ''} ago`;
+    return months === 1 ? t('time.monthAgo', { count: months }) : t('time.monthsAgo', { count: months });
   } else {
     const years = Math.floor(diffDays / 365);
-    return `${years} year${years > 1 ? 's' : ''} ago`;
+    return years === 1 ? t('time.yearAgo', { count: years }) : t('time.yearsAgo', { count: years });
   }
 };
 
@@ -131,15 +140,15 @@ export const promptSelectRepos = async (repos: Repository[]): Promise<RepoSelect
   type ChoiceValue = Repository | 'back';
 
   const choices: Array<{ name: string; value: ChoiceValue }> = [
-    { name: chalk.gray('← Back (select and press enter)'), value: 'back' as const },
+    { name: chalk.gray(t('menu.backHint')), value: 'back' as const },
     ...repos.map(repo => ({
-      name: `${repo.name} (⭐ ${repo.stars}, updated ${formatTimeAgo(repo.updatedAt)})${repo.isFork ? ' [fork]' : ''}${repo.isPrivate ? ' [private]' : ''}`,
+      name: `${repo.name} (⭐ ${repo.stars}, ${formatTimeAgo(repo.updatedAt)})${repo.isFork ? t('select.fork') : ''}${repo.isPrivate ? t('select.private') : ''}`,
       value: repo as ChoiceValue
     }))
   ];
 
   const selected = await checkbox({
-    message: 'Select repositories to delete (space to select, enter to confirm):',
+    message: t('select.prompt'),
     choices,
     pageSize: 15
   });
@@ -155,22 +164,87 @@ export const promptSelectRepos = async (repos: Repository[]): Promise<RepoSelect
 };
 
 export const promptConfirmDeletion = async (repos: Repository[]) => {
-  console.log(chalk.red('\n⚠️  You are about to DELETE these repositories:'));
+  console.log(chalk.red(`\n⚠️  ${t('delete.warning')}`));
   repos.forEach(repo => {
     console.log(chalk.red(`   • ${repo.fullName}`));
   });
-  console.log(chalk.red('\n   This action is IRREVERSIBLE!\n'));
+  console.log(chalk.red(`\n   ${t('delete.irreversible')}\n`));
 
+  const confirmWord = t('delete.confirmWord');
   const confirmation = await input({
-    message: 'Type "DELETE" to confirm:'
+    message: t('delete.confirmPrompt')
   });
 
-  return confirmation === 'DELETE';
+  return confirmation === confirmWord;
 };
 
 export const promptContinue = async () => {
   return confirm({
-    message: 'Would you like to delete more repositories?',
+    message: t('continue.prompt'),
     default: false
   });
+};
+
+// Settings menu
+type SettingsAction = 'language' | 'back';
+
+export const promptSettings = async (): Promise<SettingsAction> => {
+  const currentLang = getLanguageSetting();
+  const displayName = getLanguageDisplayName(currentLang);
+
+  return select({
+    message: t('settings.prompt'),
+    choices: [
+      { name: chalk.gray(t('settings.backToMain')), value: 'back' as const },
+      { name: `${t('settings.changeLanguage')} (${displayName})`, value: 'language' as const }
+    ]
+  });
+};
+
+export const promptLanguageSelection = async (): Promise<SupportedLanguage | 'system' | typeof BACK> => {
+  const currentSetting = getLanguageSetting();
+
+  type LangChoice = SupportedLanguage | 'system' | 'back';
+
+  const choices: Array<{ name: string; value: LangChoice }> = [
+    { name: chalk.gray(t('menu.back')), value: 'back' as const },
+    {
+      name: `System ${currentSetting === 'system' ? chalk.green('✓') : ''}`,
+      value: 'system' as const
+    },
+    ...SUPPORTED_LANGUAGES.map(lang => ({
+      name: `${getLanguageDisplayName(lang)} ${currentSetting === lang ? chalk.green('✓') : ''}`,
+      value: lang as LangChoice
+    }))
+  ];
+
+  const result = await select<LangChoice>({
+    message: t('settings.languagePrompt'),
+    choices
+  });
+
+  if (result === 'back') {
+    return BACK;
+  }
+
+  return result;
+};
+
+export const handleSettings = async (): Promise<void> => {
+  let inSettings = true;
+
+  while (inSettings) {
+    const action = await promptSettings();
+
+    if (action === 'back') {
+      inSettings = false;
+    } else if (action === 'language') {
+      const langChoice = await promptLanguageSelection();
+      if (langChoice !== BACK) {
+        setLanguage(langChoice);
+        const displayName = getLanguageDisplayName(langChoice);
+        console.log(chalk.green(`\n✓ ${t('settings.languageChanged', { language: displayName })}\n`));
+      }
+    }
+  }
 };

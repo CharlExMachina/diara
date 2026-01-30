@@ -1,0 +1,123 @@
+{
+  "title": {
+    "subtitle": "Destierra tus repositorios abandonados"
+  },
+  "auth": {
+    "authenticating": "Autenticando con GitHub...",
+    "authenticated": "Autenticado como @{{username}}",
+    "failed": "Falló la autenticación",
+    "tokenExpired": "Token expirado",
+    "tokenTip": "Tip: Considera ponerle fecha de expiración a tu token para mayor seguridad."
+  },
+  "token": {
+    "setup": {
+      "firstTime": "No se encontró token de GitHub. ¡Vamos a configurar uno!",
+      "expired": "¡Tu token de GitHub ha expirado!",
+      "expiredHint": "Por seguridad, los tokens deben tener fecha de expiración.",
+      "expiredAction": "Vamos a generar uno nuevo:",
+      "invalid": "Tu token de GitHub es inválido.",
+      "invalidHint": "Puede que haya sido revocado o que los permisos hayan cambiado."
+    },
+    "instructions": {
+      "step1": "1. Ve a:",
+      "step2": "2. Nombre del token:",
+      "step2Hint": "diara (o lo que quieras)",
+      "step3": "3. Expiración:",
+      "step3Hint": "(recomendado por seguridad)",
+      "step4": "4. Acceso a repositorios:",
+      "step4Value": "\"All repositories\"",
+      "step5": "5. Permisos → Repository permissions:",
+      "step5Permission": "Administration:",
+      "step5Value": "\"Read and write\"",
+      "step6": "6. Click en",
+      "step6Button": "\"Generate token\"",
+      "step6End": "y cópialo",
+      "tip": "Tip: ¡Ponle fecha de expiración! Diara te avisará antes de que expire."
+    },
+    "prompt": "Pega tu token aquí:",
+    "expiration": {
+      "expired": "¡Tu token ha expirado!",
+      "tomorrow": "¡Tu token expira mañana!",
+      "days": "Tu token expira en {{days}} días ({{date}})",
+      "renewHint": "Genera un nuevo token en:"
+    }
+  },
+  "repos": {
+    "fetching": "Obteniendo repositorios...",
+    "found": "Se encontraron {{count}} repositorios",
+    "fetchFailed": "Error al obtener repositorios",
+    "none": "No se encontraron repositorios.",
+    "noMatch": "Ningún repositorio coincide con tu búsqueda.",
+    "noneSelected": "No seleccionaste ningún repositorio."
+  },
+  "menu": {
+    "findMethod": "¿Cómo quieres buscar repositorios?",
+    "searchByName": "Buscar por nombre",
+    "filterByCriteria": "Filtrar por criterio",
+    "showAll": "Mostrar todos",
+    "settings": "Configuración",
+    "back": "← Volver",
+    "backHint": "← Volver (selecciona y presiona enter)"
+  },
+  "search": {
+    "prompt": "Buscar repos (coincidencia parcial, o deja vacío para volver):",
+    "found": "Se encontraron {{count}} repos que coinciden con \"{{query}}\""
+  },
+  "filter": {
+    "prompt": "Filtrar repositorios por:",
+    "all": "Mostrar todos los repositorios ({{count}})",
+    "zeroStars": "Solo repos con 0 estrellas ({{count}})",
+    "forks": "Solo repos forkeados ({{count}})",
+    "nonForks": "Solo repos no forkeados ({{count}})",
+    "older1Year": "Sin actualizar en 1+ año ({{count}})",
+    "older2Years": "Sin actualizar en 2+ años ({{count}})"
+  },
+  "select": {
+    "prompt": "Selecciona repositorios a eliminar (espacio para seleccionar, enter para confirmar):",
+    "repoInfo": "{{name}} (⭐ {{stars}}, actualizado {{timeAgo}}){{fork}}{{private}}",
+    "fork": " [fork]",
+    "private": " [privado]"
+  },
+  "time": {
+    "daysAgo": "hace {{count}} días",
+    "monthAgo": "hace {{count}} mes",
+    "monthsAgo": "hace {{count}} meses",
+    "yearAgo": "hace {{count}} año",
+    "yearsAgo": "hace {{count}} años"
+  },
+  "delete": {
+    "warning": "Estás a punto de ELIMINAR estos repositorios:",
+    "irreversible": "¡Esta acción es IRREVERSIBLE!",
+    "confirmPrompt": "Escribe \"BORRAR\" para confirmar:",
+    "confirmWord": "BORRAR",
+    "deleting": "Eliminando repositorios...",
+    "deletingRepo": "Eliminando {{repo}}...",
+    "deleted": "Eliminado {{repo}}",
+    "deleteFailed": "Error al eliminar {{repo}}: {{error}}",
+    "cancelled": "Eliminación cancelada.",
+    "successCount": "Se eliminó {{count}} repositorio exitosamente",
+    "successCountPlural": "Se eliminaron {{count}} repositorios exitosamente",
+    "failCount": "Falló la eliminación de {{count}} repositorio",
+    "failCountPlural": "Falló la eliminación de {{count}} repositorios"
+  },
+  "continue": {
+    "prompt": "¿Quieres eliminar más repositorios?"
+  },
+  "settings": {
+    "prompt": "Configuración",
+    "language": "Idioma: {{current}}",
+    "changeLanguage": "Cambiar idioma",
+    "languagePrompt": "Selecciona idioma:",
+    "languageChanged": "Idioma cambiado a {{language}}",
+    "backToMain": "← Volver al menú principal"
+  },
+  "languages": {
+    "en": "English",
+    "es": "Español (Latinoamérica)"
+  },
+  "goodbye": "¡Hasta luego!",
+  "error": {
+    "unexpected": "Error inesperado: {{message}}",
+    "cancelled": "Operación cancelada."
+  }
+}

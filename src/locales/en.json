@@ -1,0 +1,123 @@
+{
+  "title": {
+    "subtitle": "Banish your abandoned repositories"
+  },
+  "auth": {
+    "authenticating": "Authenticating with GitHub...",
+    "authenticated": "Authenticated as @{{username}}",
+    "failed": "Authentication failed",
+    "tokenExpired": "Token expired",
+    "tokenTip": "Tip: Consider setting an expiration on your token for better security."
+  },
+  "token": {
+    "setup": {
+      "firstTime": "No GitHub token found. Let's set one up!",
+      "expired": "Your GitHub token has expired!",
+      "expiredHint": "For security, tokens should have expiration dates.",
+      "expiredAction": "Let's generate a new one:",
+      "invalid": "Your GitHub token is invalid.",
+      "invalidHint": "It may have been revoked or the permissions changed."
+    },
+    "instructions": {
+      "step1": "1. Go to:",
+      "step2": "2. Token name:",
+      "step2Hint": "diara (or anything you like)",
+      "step3": "3. Expiration:",
+      "step3Hint": "(recommended for security)",
+      "step4": "4. Repository access:",
+      "step4Value": "\"All repositories\"",
+      "step5": "5. Permissions → Repository permissions:",
+      "step5Permission": "Administration:",
+      "step5Value": "\"Read and write\"",
+      "step6": "6. Click",
+      "step6Button": "\"Generate token\"",
+      "step6End": "and copy it",
+      "tip": "Tip: Set an expiration date! Diara will remind you before it expires."
+    },
+    "prompt": "Paste your token here:",
+    "expiration": {
+      "expired": "Your token has expired!",
+      "tomorrow": "Your token expires tomorrow!",
+      "days": "Your token expires in {{days}} days ({{date}})",
+      "renewHint": "Generate a new token at:"
+    }
+  },
+  "repos": {
+    "fetching": "Fetching repositories...",
+    "found": "Found {{count}} repositories",
+    "fetchFailed": "Failed to fetch repositories",
+    "none": "No repositories found.",
+    "noMatch": "No repositories match your criteria.",
+    "noneSelected": "No repositories selected."
+  },
+  "menu": {
+    "findMethod": "How would you like to find repositories?",
+    "searchByName": "Search by name",
+    "filterByCriteria": "Filter by criteria",
+    "showAll": "Show all",
+    "settings": "Settings",
+    "back": "← Back",
+    "backHint": "← Back (select and press enter)"
+  },
+  "search": {
+    "prompt": "Search repos (partial match, or leave empty to go back):",
+    "found": "Found {{count}} repos matching \"{{query}}\""
+  },
+  "filter": {
+    "prompt": "Filter repositories by:",
+    "all": "Show all repositories ({{count}})",
+    "zeroStars": "Only repos with 0 stars ({{count}})",
+    "forks": "Only forked repos ({{count}})",
+    "nonForks": "Only non-forked repos ({{count}})",
+    "older1Year": "Not updated in 1+ year ({{count}})",
+    "older2Years": "Not updated in 2+ years ({{count}})"
+  },
+  "select": {
+    "prompt": "Select repositories to delete (space to select, enter to confirm):",
+    "repoInfo": "{{name}} (⭐ {{stars}}, updated {{timeAgo}}){{fork}}{{private}}",
+    "fork": " [fork]",
+    "private": " [private]"
+  },
+  "time": {
+    "daysAgo": "{{count}} days ago",
+    "monthAgo": "{{count}} month ago",
+    "monthsAgo": "{{count}} months ago",
+    "yearAgo": "{{count}} year ago",
+    "yearsAgo": "{{count}} years ago"
+  },
+  "delete": {
+    "warning": "You are about to DELETE these repositories:",
+    "irreversible": "This action is IRREVERSIBLE!",
+    "confirmPrompt": "Type \"DELETE\" to confirm:",
+    "confirmWord": "DELETE",
+    "deleting": "Deleting repositories...",
+    "deletingRepo": "Deleting {{repo}}...",
+    "deleted": "Deleted {{repo}}",
+    "deleteFailed": "Failed to delete {{repo}}: {{error}}",
+    "cancelled": "Deletion cancelled.",
+    "successCount": "Successfully deleted {{count}} repository",
+    "successCountPlural": "Successfully deleted {{count}} repositories",
+    "failCount": "Failed to delete {{count}} repository",
+    "failCountPlural": "Failed to delete {{count}} repositories"
+  },
+  "continue": {
+    "prompt": "Would you like to delete more repositories?"
+  },
+  "settings": {
+    "prompt": "Settings",
+    "language": "Language: {{current}}",
+    "changeLanguage": "Change language",
+    "languagePrompt": "Select language:",
+    "languageChanged": "Language changed to {{language}}",
+    "backToMain": "← Back to main menu"
+  },
+  "languages": {
+    "en": "English",
+    "es": "Español (Latinoamérica)"
+  },
+  "goodbye": "Goodbye!",
+  "error": {
+    "unexpected": "Unexpected error: {{message}}",
+    "cancelled": "Operation cancelled."
+  }
+}
