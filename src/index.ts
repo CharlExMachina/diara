@@ -18,7 +18,8 @@ import {
   promptSelectRepos,
   promptConfirmDeletion,
   promptContinue,
-  showTokenExpirationWarning
+  showTokenExpirationWarning,
+  BACK
 } from './prompts.js';
 
 const showTitle = () => {
@@ -124,27 +125,44 @@ const main = async () => {
         process.exit(0);
       }
 
-      const findMethod = await promptFindMethod();
+      // Inner loop for navigation - allows going back to find method
+      let filteredRepos: typeof allRepos | null = null;
 
-      let filteredRepos;
-      if (findMethod === 'search') {
-        const query = await promptSearch();
-        filteredRepos = searchRepos(allRepos, query);
-        console.log(chalk.cyan(`\nFound ${filteredRepos.length} repos matching "${query}"`));
-      } else if (findMethod === 'filter') {
-        const filterType = await promptFilter(allRepos);
-        filteredRepos = filterRepos(allRepos, filterType);
-      } else {
-        filteredRepos = allRepos;
+      findMethodLoop: while (filteredRepos === null) {
+        const findMethod = await promptFindMethod();
+
+        if (findMethod === 'search') {
+          const query = await promptSearch();
+          if (query === BACK) {
+            continue findMethodLoop;
+          }
+          filteredRepos = searchRepos(allRepos, query);
+          console.log(chalk.cyan(`\nFound ${filteredRepos.length} repos matching "${query}"`));
+        } else if (findMethod === 'filter') {
+          const filterType = await promptFilter(allRepos);
+          if (filterType === BACK) {
+            continue findMethodLoop;
+          }
+          filteredRepos = filterRepos(allRepos, filterType);
+        } else {
+          filteredRepos = allRepos;
+        }
+
+        if (filteredRepos.length === 0) {
+          console.log(chalk.yellow('\nNo repositories match your criteria.'));
+          filteredRepos = null; // Reset to show find method again
+          continue findMethodLoop;
+        }
       }
 
-      if (filteredRepos.length === 0) {
-        console.log(chalk.yellow('\nNo repositories match your criteria.'));
-        continueLoop = await promptContinue();
+      const selection = await promptSelectRepos(filteredRepos);
+
+      if ('back' in selection) {
+        // User wants to go back to find method
         continue;
       }
 
-      const selectedRepos = await promptSelectRepos(filteredRepos);
+      const selectedRepos = selection.repos;
 
       if (selectedRepos.length === 0) {
         console.log(chalk.yellow('\nNo repositories selected.'));

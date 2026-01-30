@@ -4,6 +4,9 @@ import type { Repository, FilterType } from './github.js';
 
 type FindMethod = 'search' | 'filter' | 'all';
 
+// Symbol to indicate user wants to go back
+export const BACK = Symbol('back');
+
 export const promptForToken = async (reason?: 'first-time' | 'expired' | 'invalid') => {
   if (reason === 'expired') {
     console.log(chalk.red('\n⚠️  Your GitHub token has expired!\n'));
@@ -58,13 +61,18 @@ export const promptFindMethod = async (): Promise<FindMethod> => {
   });
 };
 
-export const promptSearch = async () => {
-  return input({
-    message: 'Search repos (partial match):'
+export const promptSearch = async (): Promise<string | typeof BACK> => {
+  const result = await input({
+    message: 'Search repos (partial match, or leave empty to go back):'
   });
+
+  if (result.trim() === '') {
+    return BACK;
+  }
+  return result;
 };
 
-export const promptFilter = async (repos: Repository[]): Promise<FilterType> => {
+export const promptFilter = async (repos: Repository[]): Promise<FilterType | typeof BACK> => {
   const now = new Date();
   const oneYearAgo = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
   const twoYearsAgo = new Date(now.getFullYear() - 2, now.getMonth(), now.getDate());
@@ -75,9 +83,12 @@ export const promptFilter = async (repos: Repository[]): Promise<FilterType> => 
   const olderThan1Year = repos.filter(r => r.updatedAt < oneYearAgo).length;
   const olderThan2Years = repos.filter(r => r.updatedAt < twoYearsAgo).length;
 
-  return select({
+  type FilterChoice = FilterType | 'back';
+
+  const result = await select<FilterChoice>({
     message: 'Filter repositories by:',
     choices: [
+      { name: chalk.gray('← Back'), value: 'back' as const },
       { name: `Show all repositories (${repos.length})`, value: 'all' as const },
       { name: `Only repos with 0 stars (${zeroStarsCount})`, value: 'zero-stars' as const },
       { name: `Only forked repos (${forksCount})`, value: 'forks' as const },
@@ -86,6 +97,11 @@ export const promptFilter = async (repos: Repository[]): Promise<FilterType> => 
       { name: `Not updated in 2+ years (${olderThan2Years})`, value: 'older-2-years' as const }
     ]
   });
+
+  if (result === 'back') {
+    return BACK;
+  }
+  return result;
 };
 
 const formatTimeAgo = (date: Date) => {
@@ -104,21 +120,38 @@ const formatTimeAgo = (date: Date) => {
   }
 };
 
-export const promptSelectRepos = async (repos: Repository[]): Promise<Repository[]> => {
+type RepoSelection = { repos: Repository[] } | { back: true };
+
+export const promptSelectRepos = async (repos: Repository[]): Promise<RepoSelection> => {
   if (repos.length === 0) {
-    return [];
+    return { repos: [] };
   }
 
-  const choices = repos.map(repo => ({
-    name: `${repo.name} (⭐ ${repo.stars}, updated ${formatTimeAgo(repo.updatedAt)})${repo.isFork ? ' [fork]' : ''}${repo.isPrivate ? ' [private]' : ''}`,
-    value: repo
-  }));
+  // Create a special back marker type
+  type ChoiceValue = Repository | 'back';
 
-  return checkbox({
+  const choices: Array<{ name: string; value: ChoiceValue }> = [
+    { name: chalk.gray('← Back (select and press enter)'), value: 'back' as const },
+    ...repos.map(repo => ({
+      name: `${repo.name} (⭐ ${repo.stars}, updated ${formatTimeAgo(repo.updatedAt)})${repo.isFork ? ' [fork]' : ''}${repo.isPrivate ? ' [private]' : ''}`,
+      value: repo as ChoiceValue
+    }))
+  ];
+
+  const selected = await checkbox({
     message: 'Select repositories to delete (space to select, enter to confirm):',
     choices,
     pageSize: 15
   });
+
+  // Check if back was selected
+  if (selected.includes('back' as ChoiceValue)) {
+    return { back: true };
+  }
+
+  // Filter out any non-repo values (type guard)
+  const selectedRepos = selected.filter((item): item is Repository => item !== 'back');
+  return { repos: selectedRepos };
 };
 
 export const promptConfirmDeletion = async (repos: Repository[]) => {
