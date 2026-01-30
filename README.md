@@ -65,13 +65,15 @@ bun run build
 
 1. Go to **[Fine-grained tokens](https://github.com/settings/personal-access-tokens/new)**
 2. **Token name:** `diara` (or anything you like)
-3. **Expiration:** Choose your preference
+3. **Expiration:** Set to **30 or 90 days** (recommended for security)
 4. **Repository access:** Select **"All repositories"**
 5. **Permissions** → **Repository permissions:**
    - **Administration:** Set to **"Read and write"**
 6. Click **"Generate token"** and copy it
 
 > **Note:** The Administration permission is required to delete repositories.
+
+> **💡 Security tip:** Always set an expiration date on your tokens. DIARA will warn you when your token is about to expire and guide you through generating a new one.
 
 ### 2. Run diara
 

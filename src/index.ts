@@ -7,7 +7,8 @@ import {
   fetchAllRepos,
   deleteRepo,
   filterRepos,
-  searchRepos
+  searchRepos,
+  getTokenExpirationStatus
 } from './github.js';
 import {
   promptForToken,
@@ -16,7 +17,8 @@ import {
   promptFilter,
   promptSelectRepos,
   promptConfirmDeletion,
-  promptContinue
+  promptContinue,
+  showTokenExpirationWarning
 } from './prompts.js';
 
 const showTitle = () => {
@@ -30,12 +32,14 @@ const showTitle = () => {
   console.log(chalk.gray('      Banish your abandoned repositories\n'));
 };
 
-const setupToken = async () => {
-  if (hasToken()) {
+type TokenPromptReason = 'first-time' | 'expired' | 'invalid';
+
+const setupToken = async (reason?: TokenPromptReason) => {
+  if (!reason && hasToken()) {
     return getToken();
   }
 
-  const token = await promptForToken();
+  const token = await promptForToken(reason ?? 'first-time');
   setToken(token);
   return token;
 };
@@ -52,26 +56,52 @@ const main = async () => {
   try {
     showTitle();
 
-    const token = await setupToken();
+    let token = await setupToken();
     initOctokit(token);
 
     const authSpinner = ora('Authenticating with GitHub...').start();
-    try {
-      const username = await validateToken();
-      authSpinner.succeed(chalk.green(`Authenticated as @${username}`));
-    } catch (error) {
-      authSpinner.fail(chalk.red('Authentication failed'));
-      if (error instanceof Error) {
-        if (isOctokitError(error) && error.status === 401) {
-          console.log(chalk.red('\nInvalid token. Please check your token and try again.'));
-          console.log(chalk.gray('You can create a new token at: https://github.com/settings/tokens'));
-          console.log(chalk.gray('Run the command again to enter a new token.\n'));
+    let authenticated = false;
+
+    while (!authenticated) {
+      try {
+        const { username, expiresAt } = await validateToken();
+        const expirationStatus = getTokenExpirationStatus(expiresAt);
+
+        if (expirationStatus === 'expired') {
+          authSpinner.fail(chalk.red('Token expired'));
           clearToken();
-        } else {
-          console.log(chalk.red(`\nError: ${error.message}`));
+          token = await setupToken('expired');
+          initOctokit(token);
+          continue;
         }
+
+        authSpinner.succeed(chalk.green(`Authenticated as @${username}`));
+
+        // Show warning if token is expiring soon
+        if (expirationStatus === 'expiring-soon' && expiresAt) {
+          showTokenExpirationWarning(expiresAt);
+        } else if (expirationStatus === 'no-expiration') {
+          console.log(chalk.gray('   💡 Tip: Consider setting an expiration on your token for better security.\n'));
+        }
+
+        authenticated = true;
+      } catch (error) {
+        authSpinner.fail(chalk.red('Authentication failed'));
+        if (error instanceof Error) {
+          if (isOctokitError(error) && error.status === 401) {
+            // Token is invalid (could be expired, revoked, or malformed)
+            clearToken();
+            token = await setupToken('invalid');
+            initOctokit(token);
+            authSpinner.start('Authenticating with GitHub...');
+            continue;
+          } else {
+            console.log(chalk.red(`\nError: ${error.message}`));
+            process.exit(1);
+          }
+        }
+        process.exit(1);
       }
-      process.exit(1);
     }
 
     let continueLoop = true;

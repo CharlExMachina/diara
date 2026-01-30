@@ -34,9 +34,49 @@ const getOctokit = () => {
   return octokit;
 };
 
-export const validateToken = async () => {
-  const { data } = await getOctokit().users.getAuthenticated();
-  return data.login;
+export interface TokenValidation {
+  username: string;
+  expiresAt: Date | null;
+}
+
+export const validateToken = async (): Promise<TokenValidation> => {
+  const client = getOctokit();
+  const response = await client.users.getAuthenticated();
+
+  // GitHub includes token expiration in response headers for fine-grained tokens
+  const expirationHeader = response.headers['github-authentication-token-expiration'];
+  const expiresAt = expirationHeader ? new Date(expirationHeader) : null;
+
+  return {
+    username: response.data.login,
+    expiresAt
+  };
+};
+
+export const getTokenExpirationStatus = (expiresAt: Date | null): 'valid' | 'expiring-soon' | 'expired' | 'no-expiration' => {
+  if (!expiresAt) {
+    return 'no-expiration';
+  }
+
+  const now = new Date();
+  if (expiresAt <= now) {
+    return 'expired';
+  }
+
+  const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+  if (expiresAt <= sevenDaysFromNow) {
+    return 'expiring-soon';
+  }
+
+  return 'valid';
+};
+
+export const formatExpirationDate = (date: Date): string => {
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  });
 };
 
 export const fetchAllRepos = async (): Promise<Repository[]> => {

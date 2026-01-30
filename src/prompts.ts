@@ -4,21 +4,47 @@ import type { Repository, FilterType } from './github.js';
 
 type FindMethod = 'search' | 'filter' | 'all';
 
-export const promptForToken = async () => {
-  console.log(chalk.yellow('\n🔑 No GitHub token found. Let\'s set one up!\n'));
+export const promptForToken = async (reason?: 'first-time' | 'expired' | 'invalid') => {
+  if (reason === 'expired') {
+    console.log(chalk.red('\n⚠️  Your GitHub token has expired!\n'));
+    console.log(chalk.gray('   For security, tokens should have expiration dates.'));
+    console.log(chalk.gray('   Let\'s generate a new one:\n'));
+  } else if (reason === 'invalid') {
+    console.log(chalk.red('\n⚠️  Your GitHub token is invalid.\n'));
+    console.log(chalk.gray('   It may have been revoked or the permissions changed.'));
+    console.log(chalk.gray('   Let\'s generate a new one:\n'));
+  } else {
+    console.log(chalk.yellow('\n🔑 No GitHub token found. Let\'s set one up!\n'));
+  }
 
   console.log(chalk.white('   1. Go to: ') + chalk.cyan('https://github.com/settings/personal-access-tokens/new'));
   console.log(chalk.white('   2. Token name: ') + chalk.gray('diara (or anything you like)'));
-  console.log(chalk.white('   3. Expiration: ') + chalk.gray('Choose your preference'));
+  console.log(chalk.white('   3. Expiration: ') + chalk.yellow('30 or 90 days') + chalk.gray(' (recommended for security)'));
   console.log(chalk.white('   4. Repository access: ') + chalk.yellow('"All repositories"'));
   console.log(chalk.white('   5. Permissions → Repository permissions:'));
   console.log(chalk.gray('      • ') + chalk.white('Administration: ') + chalk.yellow('"Read and write"'));
   console.log(chalk.white('   6. Click ') + chalk.green('"Generate token"') + chalk.white(' and copy it\n'));
 
+  console.log(chalk.gray('   💡 Tip: Set an expiration date! Diara will remind you before it expires.\n'));
+
   return password({
     message: 'Paste your token here:',
     mask: '*'
   });
+};
+
+export const showTokenExpirationWarning = (expiresAt: Date) => {
+  const now = new Date();
+  const daysUntilExpiry = Math.ceil((expiresAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+
+  if (daysUntilExpiry <= 0) {
+    console.log(chalk.red(`\n⚠️  Your token has expired!`));
+  } else if (daysUntilExpiry === 1) {
+    console.log(chalk.yellow(`\n⚠️  Your token expires tomorrow!`));
+  } else {
+    console.log(chalk.yellow(`\n⚠️  Your token expires in ${daysUntilExpiry} days (${expiresAt.toLocaleDateString()})`));
+  }
+  console.log(chalk.gray('   Generate a new token at: https://github.com/settings/personal-access-tokens/new\n'));
 };
 
 export const promptFindMethod = async (): Promise<FindMethod> => {
