@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="console-application">
+  <id>com.github.charlexmachina.diara</id>
+  <name>Diara</name>
+  <summary>Bulk delete GitHub repositories interactively</summary>
+  <metadata_license>MIT</metadata_license>
+  <project_license>MIT</project_license>
+
+  <description>
+    <p>
+      Diara is an interactive CLI tool that helps you clean up your GitHub account
+      by bulk deleting repositories. Named after the Final Fantasy spell that
+      banishes undead, Diara banishes your abandoned repositories.
+    </p>
+    <p>Features:</p>
+    <ul>
+      <li>Interactive multi-select with arrow keys and spacebar</li>
+      <li>Search repositories by name (partial matching)</li>
+      <li>Filter by stars, fork status, or age</li>
+      <li>Confirmation screen before deletion</li>
+      <li>Localized in English and Spanish</li>
+      <li>Token expiration warnings and renewal guidance</li>
+    </ul>
+  </description>
+
+  <categories>
+    <category>Development</category>
+    <category>Utility</category>
+  </categories>
+
+  <url type="homepage">https://github.com/CharlExMachina/diara</url>
+  <url type="bugtracker">https://github.com/CharlExMachina/diara/issues</url>
+
+  <launchable type="desktop-id">com.github.charlexmachina.diara.desktop</launchable>
+
+  <provides>
+    <binary>diara</binary>
+  </provides>
+
+  <releases>
+    <release version="1.1.0" date="2025-01-29">
+      <description>
+        <ul>
+          <li>Added localization support (English and Spanish)</li>
+          <li>Added token expiration detection and renewal guidance</li>
+          <li>Added back navigation in menus</li>
+          <li>Added settings menu for language selection</li>
+        </ul>
+      </description>
+    </release>
+    <release version="1.0.0" date="2025-01-29">
+      <description>
+        <p>Initial release</p>
+      </description>
+    </release>
+  </releases>
+
+  <content_rating type="oars-1.1" />
+
+  <developer id="com.github.charlexmachina">
+    <name>Carlos (CharlExMachina)</name>
+  </developer>
+</component>

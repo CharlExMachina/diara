@@ -1,0 +1,36 @@
+id: com.github.charlexmachina.diara
+runtime: org.freedesktop.Platform
+runtime-version: '24.08'
+sdk: org.freedesktop.Sdk
+command: diara
+
+finish-args:
+  # Network access for GitHub API
+  - --share=network
+  # Access to user config directory for storing token
+  - --filesystem=~/.config/diara:create
+
+modules:
+  - name: diara
+    buildsystem: simple
+    build-commands:
+      # Install the pre-built binary
+      - install -Dm755 diara /app/bin/diara
+      # Install metainfo for software centers
+      - install -Dm644 com.github.charlexmachina.diara.metainfo.xml /app/share/metainfo/com.github.charlexmachina.diara.metainfo.xml
+    sources:
+      - type: file
+        # This URL will be updated by CI when releasing
+        url: https://github.com/CharlExMachina/diara/releases/download/v1.0.0/diara-linux-x64
+        sha256: REPLACE_WITH_ACTUAL_SHA256
+        dest-filename: diara
+        only-arches:
+          - x86_64
+      - type: file
+        url: https://github.com/CharlExMachina/diara/releases/download/v1.0.0/diara-linux-arm64
+        sha256: REPLACE_WITH_ACTUAL_SHA256_ARM64
+        dest-filename: diara
+        only-arches:
+          - aarch64
+      - type: file
+        path: com.github.charlexmachina.diara.metainfo.xml
